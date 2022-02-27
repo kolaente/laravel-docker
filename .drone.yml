@@ -1,0 +1,66 @@
+kind: pipeline
+name: docker
+
+trigger:
+  ref:
+    - refs/heads/main
+    - "refs/tags/**"
+
+steps:
+
+  - name: 8.0-octane-dev
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      dockerfile: Dockerfile.octane.dev
+      tags: 8.0-octane-dev
+      build_args:
+        - php_version=8.0
+
+  - name: 8.0-octane-prod
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      dockerfile: Dockerfile.octane.prod
+      tags: 8.0-octane-prod
+      build_args:
+        - php_version=8.0
+
+  - name: 8.1-octane-dev
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      dockerfile: Dockerfile.octane.dev
+      tags: 8.1-octane-dev
+      build_args:
+        - php_version=8.1
+
+  - name: 8.1-octane-prod
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      dockerfile: Dockerfile.octane.prod
+      tags: 8.1-octane-prod
+      build_args:
+        - php_version=8.1
+
