@@ -1,4 +1,5 @@
-FROM php:8.0-buster
+ARG php_version
+FROM php:${php_version}-buster
 
 RUN echo "upload_max_filesize = 2G; " > /usr/local/etc/php/conf.d/upload.ini && \
 echo "post_max_size = 2500M;" >> /usr/local/etc/php/conf.d/upload.ini && \
