@@ -7,6 +7,10 @@ trigger:
     - "refs/tags/**"
 
 steps:
+  - name: fetch-tags
+    image: docker:git
+    commands:
+      - git fetch --tags
 
   - name: 8.0-octane-dev
     image: plugins/docker:linux-amd64
@@ -21,6 +25,7 @@ steps:
       tags: 8.0-octane-dev
       build_args:
         - php_version=8.0
+    depends_on: [ fetch-tags ]
 
   - name: 8.0-octane-prod
     image: plugins/docker:linux-amd64
@@ -35,6 +40,7 @@ steps:
       tags: 8.0-octane-prod
       build_args:
         - php_version=8.0
+    depends_on: [ fetch-tags ]
 
   - name: 8.1-octane-dev
     image: plugins/docker:linux-amd64
@@ -49,6 +55,7 @@ steps:
       tags: 8.1-octane-dev
       build_args:
         - php_version=8.1
+    depends_on: [ fetch-tags ]
 
   - name: 8.1-octane-prod
     image: plugins/docker:linux-amd64
@@ -63,4 +70,5 @@ steps:
       tags: 8.1-octane-prod
       build_args:
         - php_version=8.1
+    depends_on: [ fetch-tags ]
 
