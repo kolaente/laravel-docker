@@ -14,6 +14,7 @@ RUN apt-get update && \
     libxpm-dev \
     zip libzip-dev \
     gnupg2 \
+    pgrep \
     sudo && \
   docker-php-ext-configure curl && \
   docker-php-ext-install mysqli curl exif && \
