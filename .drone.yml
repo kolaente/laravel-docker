@@ -22,7 +22,7 @@ steps:
         from_secret: docker_password
       repo: kolaente/laravel
       context: ./octane/
-      dockerfile: Dockerfile.dev
+      dockerfile: ./octane/Dockerfile.dev
       tags: 8.0-octane-dev
       build_args:
         - php_version=8.0
@@ -38,7 +38,7 @@ steps:
         from_secret: docker_password
       repo: kolaente/laravel
       context: ./octane/
-      dockerfile: Dockerfile.prod
+      dockerfile: ./octane/Dockerfile.prod
       tags: 8.0-octane-prod
       build_args:
         - php_version=8.0
@@ -54,7 +54,7 @@ steps:
         from_secret: docker_password
       repo: kolaente/laravel
       context: ./octane/
-      dockerfile: Dockerfile.dev
+      dockerfile: ./octane/Dockerfile.dev
       tags: 8.1-octane-dev
       build_args:
         - php_version=8.1
@@ -70,7 +70,7 @@ steps:
         from_secret: docker_password
       repo: kolaente/laravel
       context: ./octane/
-      dockerfile: Dockerfile.prod
+      dockerfile: ./octane/Dockerfile.prod
       tags: 8.1-octane-prod
       build_args:
         - php_version=8.1
