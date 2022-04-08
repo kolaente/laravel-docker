@@ -24,8 +24,11 @@ RUN apt-get update && \
   docker-php-ext-install mysqli curl exif && \
   docker-php-ext-configure zip && \
   docker-php-ext-install zip && \
-  docker-php-ext-configure gd && \
-  docker-php-ext-install gd && \
+  docker-php-ext-configure gd \
+    --with-freetype=/usr/include/ \
+    --with-jpeg=/usr/include/ && \
+  docker-php-ext-install -j$(nproc) gd && \
+  docker-php-ext-enable gd && \
   docker-php-ext-install pdo pdo_mysql && \
   a2enmod rewrite
 
@@ -41,3 +44,4 @@ WORKDIR /var/www
 ADD setup.sh /usr/local/bin/setup
 ADD run-dev.sh /run.sh
 CMD /run.sh
+
