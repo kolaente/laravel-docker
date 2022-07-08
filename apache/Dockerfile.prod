@@ -30,6 +30,7 @@ RUN apt-get update && \
   docker-php-ext-install -j$(nproc) gd && \
   docker-php-ext-enable gd && \
   docker-php-ext-install pdo pdo_mysql && \
+  docker-php-ext-install bcmath && \
   docker-php-ext-install opcache && \
   a2enmod rewrite && \
   a2enmod deflate && \
