@@ -1,5 +1,5 @@
 ARG php_version
-FROM php:${php_version}-buster
+FROM php:${php_version}-bullseye
 
 RUN echo "upload_max_filesize = 2G; " > /usr/local/etc/php/conf.d/upload.ini && \
 echo "post_max_size = 2500M;" >> /usr/local/etc/php/conf.d/upload.ini && \
@@ -30,11 +30,11 @@ RUN apt-get update && \
   rm -rf /tmp/pear && \
   docker-php-ext-enable redis
 
-ENV NGINX_VERSION   1.21.5
-ENV NJS_VERSION     0.7.1
-ENV PKG_RELEASE     1~buster
+ENV NGINX_VERSION   1.23.3
+ENV NJS_VERSION     0.7.9
+ENV PKG_RELEASE     1~bullseye
 RUN apt-key adv --keyserver "hkp://keyserver.ubuntu.com:80" --keyserver-options timeout=10 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 && \
-    echo "deb https://nginx.org/packages/mainline/debian/ buster nginx" >> /etc/apt/sources.list.d/nginx.list && \
+    echo "deb https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list  && \
     apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
       nginx=${NGINX_VERSION}-${PKG_RELEASE} \
