@@ -15,6 +15,7 @@ RUN apt-get update && \
     zip libzip-dev \
     gnupg2 \
     pcregrep \
+    procps \
     sudo && \
   docker-php-ext-configure curl && \
   docker-php-ext-install mysqli curl exif && \
