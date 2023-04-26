@@ -16,18 +16,26 @@ RUN apt-get update && \
     gnupg2 \
     pcregrep \
     procps \
+    imagemagick libmagickwand-dev \
     sudo && \
   docker-php-ext-configure curl && \
   docker-php-ext-install mysqli curl exif && \
   docker-php-ext-configure zip && \
   docker-php-ext-install zip && \
-  docker-php-ext-configure gd \
-    --with-freetype=/usr/include/ \
-    --with-jpeg=/usr/include/ && \
+  docker-php-ext-configure gd --with-webp --with-jpeg --with-xpm --with-freetype && \
   docker-php-ext-install gd && \
+  mkdir -p /usr/src/php/ext/imagick && pecl install imagick && docker-php-ext-enable imagick && \
   docker-php-ext-install pdo pdo_mysql && \
   docker-php-ext-install pcntl && \
   pecl install swoole && docker-php-ext-enable swoole
+
+ADD imagick-policy.xml /etc/ImageMagick-6/policy.xml
+
+ENV PHPREDIS_VERSION 5.3.7
+RUN mkdir -p /usr/src/php/ext/redis \
+    && curl -L https://github.com/phpredis/phpredis/archive/$PHPREDIS_VERSION.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \
+    && echo 'redis' >> /usr/src/php-available-exts \
+    && docker-php-ext-install redis
 
 # The octance watcher requires node
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash && \
