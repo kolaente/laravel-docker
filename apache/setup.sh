@@ -10,3 +10,5 @@ fi
 
 usermod --non-unique --uid ${UID} www-data
 groupmod --non-unique --gid ${GID} www-data
+
+mkdir -p /var/www/storage/framework/views
