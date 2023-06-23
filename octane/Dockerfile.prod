@@ -17,6 +17,7 @@ RUN apt-get update && \
     pcregrep \
     procps \
     imagemagick libmagickwand-dev \
+    libtidy-dev \
     sudo && \
   docker-php-ext-configure curl && \
   docker-php-ext-install mysqli curl exif && \
@@ -27,6 +28,8 @@ RUN apt-get update && \
   mkdir -p /usr/src/php/ext/imagick && pecl install imagick && docker-php-ext-enable imagick && \
   docker-php-ext-install pdo pdo_mysql && \
   docker-php-ext-install pcntl && \
+  docker-php-ext-install tidy && \
+  docker-php-ext-enable tidy && \
   pecl install swoole && docker-php-ext-enable swoole
 
 ADD imagick-policy.xml /etc/ImageMagick-6/policy.xml
