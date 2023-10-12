@@ -23,6 +23,7 @@ RUN apt-get update && \
   docker-php-ext-install mysqli curl exif && \
   docker-php-ext-configure zip && \
   docker-php-ext-install zip && \
+  docker-php-ext-install intl && \
   docker-php-ext-configure gd --with-webp --with-jpeg --with-xpm --with-freetype && \
   docker-php-ext-install gd && \
   mkdir -p /usr/src/php/ext/imagick && pecl install imagick && docker-php-ext-enable imagick && \
