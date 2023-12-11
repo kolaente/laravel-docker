@@ -18,7 +18,7 @@ RUN apt-get update && \
     procps \
     imagemagick libmagickwand-dev \
     libtidy-dev \
-    sudo && \
+    sudo pdftk && \
   docker-php-ext-configure curl && \
   docker-php-ext-install mysqli curl exif && \
   docker-php-ext-configure zip && \
