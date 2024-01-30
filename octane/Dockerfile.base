@@ -1,0 +1,49 @@
+ARG php_base_image
+FROM $php_base_image
+
+RUN echo "upload_max_filesize = 2G; " > /usr/local/etc/php/conf.d/upload.ini && \
+echo "post_max_size = 2500M;" >> /usr/local/etc/php/conf.d/upload.ini && \
+echo "date.timezone = \"Europe/Berlin\"" >> /usr/local/etc/php/conf.d/timezone.ini && \
+echo 'memory_limit = 2G' >> /usr/local/etc/php/conf.d/max_memory.ini
+RUN apt-get update && \
+  apt-get install -y \
+    git \
+    curl libcurl3-dev libssl-dev \
+    libpng-dev libwebp-dev libjpeg62-turbo-dev libfreetype6-dev libpng-dev \
+    libxpm-dev \
+    zip libzip-dev \
+    gnupg2 \
+    pcregrep \
+    procps \
+    imagemagick libmagickwand-dev \
+    libtidy-dev \
+    sudo && \
+  docker-php-ext-configure curl && \
+  docker-php-ext-install curl exif && \
+  docker-php-ext-configure zip && \
+  docker-php-ext-install zip && \
+  docker-php-ext-install intl && \
+  docker-php-ext-configure gd --with-webp --with-jpeg --with-xpm --with-freetype && \
+  docker-php-ext-install gd && \
+  docker-php-ext-install pcntl && \
+  docker-php-ext-install tidy && \
+  docker-php-ext-enable tidy
+
+# https://github.com/Imagick/imagick/issues/643#issuecomment-1834361716
+RUN curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/7088edc353f53c4bc644573a79cdcd67a726ae16.tar.gz \
+    && tar --strip-components=1 -xf /tmp/imagick.tar.gz \
+    && phpize \
+    && ./configure \
+    && make \
+    && make install \
+    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini
+ADD imagick-policy.xml /etc/ImageMagick-6/policy.xml
+
+ENV PHPREDIS_VERSION=6.0.2
+RUN mkdir -p /usr/src/php/ext/redis \
+    && curl -L https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \
+    && echo 'redis' >> /usr/src/php-available-exts \
+    && docker-php-ext-install redis
+
+EXPOSE 80
+CMD /run.sh

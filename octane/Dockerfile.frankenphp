@@ -1,0 +1,10 @@
+ARG php_base_image
+FROM ${php_base_image}
+
+WORKDIR /app
+
+ENV OCTANE_SERVER=frankenphp
+
+ADD setup.sh /usr/local/bin/setup
+ADD artisan-start.sh /usr/local/bin/artisan-start
+ADD run-frankenphp.sh /run.sh
