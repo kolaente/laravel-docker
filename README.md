@@ -48,7 +48,7 @@ This will package the whole application as a single docker image ready to deploy
 The Frankenphp image does not have drivers for mysql or postgresql installed. If you need those, you'll have to install them yourself:
 
 ```dockerfile
-FROM composer:2 AS build-php
+FROM composer:2.6 AS build-php
 
 WORKDIR /app
 COPY . ./
@@ -66,16 +66,16 @@ RUN corepack enable && \
     pnpm install
 
 # To make tailwind purge find templates from vendor
-COPY --from=build-php /var/www/vendor /app/vendor
+COPY --from=build-php /app/vendor /app/vendor
 COPY . ./
 
 RUN pnpm run build && rm -rf node_modules
 
 FROM kolaente/laravel:8.3-octane-frankenphp
 
-RUN apt-get install -y mariadb-client && \
-  docker-php-ext-install mysqli curl exif && \
-  docker-php-ext-install pdo pdo_mysql
+RUN apt-get update && apt-get install -y libpq-dev && \
+  docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
+  docker-php-ext-install pdo_pgsql pgsql
 
 COPY . ./
 COPY --from=build-frontend /app/public /app/public
