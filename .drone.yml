@@ -44,6 +44,22 @@ steps:
         - php_version=8.2
     depends_on: [ fetch-tags ]
 
+  - name: 8.2-octane-base
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.base
+      tags: 8.2-octane-base
+      build_args:
+        - php_base_image=php:8.2-bullseye
+    depends_on: [ fetch-tags ]
+
   - name: 8.2-octane-dev
     image: plugins/docker:linux-amd64
     pull: true
@@ -57,8 +73,8 @@ steps:
       dockerfile: ./octane/Dockerfile.dev
       tags: 8.2-octane-dev
       build_args:
-        - php_version=8.2
-    depends_on: [ fetch-tags ]
+        - php_base_image=kolaente/laravel:8.2-octane-base
+    depends_on: [ 8.2-octane-base ]
 
   - name: 8.2-octane-prod
     image: plugins/docker:linux-amd64
@@ -73,8 +89,40 @@ steps:
       dockerfile: ./octane/Dockerfile.prod
       tags: 8.2-octane-prod
       build_args:
-        - php_version=8.2
+        - php_base_image=kolaente/laravel:8.2-octane-base
+    depends_on: [ 8.2-octane-base ]
+
+  - name: 8.2-octane-frankenphp-base
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.base
+      tags: 8.2-octane-frankenphp-base
+      build_args:
+        - php_base_image=dunglas/frankenphp:latest-php8.2-bookworm
     depends_on: [ fetch-tags ]
+
+  - name: 8.2-octane-frankenphp
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.frankenphp
+      tags: 8.2-octane-frankenphp
+      build_args:
+        - php_base_image=kolaente/laravel:8.2-octane-frankenphp-base
+    depends_on: [ 8.2-octane-frankenphp-base ]
 
   - name: 8.3-apache-dev
     image: plugins/docker:linux-amd64
@@ -108,6 +156,22 @@ steps:
         - php_version=8.3
     depends_on: [ fetch-tags ]
 
+  - name: 8.3-octane-base
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.base
+      tags: 8.3-octane-base
+      build_args:
+        - php_base_image=php:8.3-bullseye
+    depends_on: [ fetch-tags ]
+
   - name: 8.3-octane-dev
     image: plugins/docker:linux-amd64
     pull: true
@@ -121,8 +185,8 @@ steps:
       dockerfile: ./octane/Dockerfile.dev
       tags: 8.3-octane-dev
       build_args:
-        - php_version=8.3
-    depends_on: [ fetch-tags ]
+        - php_base_image=kolaente/laravel:8.3-octane-base
+    depends_on: [ 8.3-octane-base ]
 
   - name: 8.3-octane-prod
     image: plugins/docker:linux-amd64
@@ -137,6 +201,37 @@ steps:
       dockerfile: ./octane/Dockerfile.prod
       tags: 8.3-octane-prod
       build_args:
-        - php_version=8.3
+        - php_base_image=kolaente/laravel:8.3-octane-base
+    depends_on: [ 8.3-octane-base ]
+
+  - name: 8.3-octane-frankenphp-base
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.base
+      tags: 8.3-octane-frankenphp-base
+      build_args:
+        - php_base_image=dunglas/frankenphp:latest-php8.3-bookworm
     depends_on: [ fetch-tags ]
 
+  - name: 8.3-octane-frankenphp
+    image: plugins/docker:linux-amd64
+    pull: true
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      repo: kolaente/laravel
+      context: ./octane/
+      dockerfile: ./octane/Dockerfile.frankenphp
+      tags: 8.3-octane-frankenphp
+      build_args:
+        - php_base_image=kolaente/laravel:8.3-octane-frankenphp-base
+    depends_on: [ 8.3-octane-frankenphp-base ]
