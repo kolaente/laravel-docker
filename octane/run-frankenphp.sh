@@ -6,4 +6,4 @@ setup
 
 artisan-start /app/artisan
 
-exec "php -d variables_order=EGPCS /var/www/artisan octane:start --host=0.0.0.0 --port=80 --admin-port 2019"
+exec php -d variables_order=EGPCS /app/artisan octane:start --server=frankenphp --host=0.0.0.0 --port=80 --admin-port 2019
