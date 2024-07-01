@@ -7,9 +7,9 @@ RUN apt-get install -y mariadb-client && \
 
 RUN pecl install swoole && docker-php-ext-enable swoole
 
-ENV NGINX_VERSION   1.23.3
-ENV NJS_VERSION     0.7.9
-ENV PKG_RELEASE     1~bullseye
+ENV NGINX_VERSION   1.27.0
+ENV NJS_VERSION     0.8.4
+ENV PKG_RELEASE     2~bookworm
 RUN apt-key adv --keyserver "hkp://keyserver.ubuntu.com:80" --keyserver-options timeout=10 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 && \
     echo "deb https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list  && \
     apt-get update && \
