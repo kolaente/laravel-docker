@@ -11,6 +11,8 @@ fi
 usermod --non-unique --uid ${UID} www-data
 groupmod --non-unique --gid ${GID} www-data
 
+mkdir -p /var/www/storage/framework/cache
 mkdir -p /var/www/storage/framework/views
+mkdir -p /app/storage/framework/cache
 mkdir -p /app/storage/framework/views
 
