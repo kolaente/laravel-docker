@@ -105,7 +105,7 @@ steps:
       dockerfile: ./octane/Dockerfile.base
       tags: 8.2-octane-frankenphp-base
       build_args:
-        - php_base_image=dunglas/frankenphp:latest-php8.2-bookworm
+        - php_base_image=dunglas/frankenphp:php8.2-bookworm
     depends_on: [ fetch-tags ]
 
   - name: 8.2-octane-frankenphp
@@ -217,7 +217,7 @@ steps:
       dockerfile: ./octane/Dockerfile.base
       tags: 8.3-octane-frankenphp-base
       build_args:
-        - php_base_image=dunglas/frankenphp:latest-php8.3-bookworm
+        - php_base_image=dunglas/frankenphp:php8.3-bookworm
     depends_on: [ fetch-tags ]
 
   - name: 8.3-octane-frankenphp
