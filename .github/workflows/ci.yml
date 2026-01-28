@@ -1,91 +1,126 @@
+name: Build Docker Images
+
 on:
-  schedule:
-    - cron: '16 13 * * *'
   push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    branches: ["main"]
+    tags: ["**"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
-
+  REGISTRY: ghcr.io/${{ github.repository }}
 
 jobs:
-  build:
-
+  build-independent:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
-      id-token: write
+    strategy:
+      matrix:
+        php_version: ["8.2", "8.3"]
+        variant: ["apache-dev", "apache-prod", "octane-base", "octane-frankenphp-base"]
+        include:
+          - variant: apache-dev
+            context: ./apache/
+            dockerfile: ./apache/Dockerfile.dev
+          - variant: apache-prod
+            context: ./apache/
+            dockerfile: ./apache/Dockerfile.prod
+          - variant: octane-base
+            context: ./octane/
+            dockerfile: ./octane/Dockerfile.base
+          - variant: octane-frankenphp-base
+            context: ./octane/
+            dockerfile: ./octane/Dockerfile.base
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
-        with:
-          cosign-release: 'v2.2.4'
+      - name: Compute build args
+        id: args
+        run: |
+          case "${{ matrix.variant }}" in
+            apache-*)
+              echo "build_args=php_version=${{ matrix.php_version }}" >> $GITHUB_OUTPUT
+              ;;
+            octane-base)
+              echo "build_args=php_base_image=php:${{ matrix.php_version }}-bullseye" >> $GITHUB_OUTPUT
+              ;;
+            octane-frankenphp-base)
+              echo "build_args=php_base_image=dunglas/frankenphp:php${{ matrix.php_version }}-bookworm" >> $GITHUB_OUTPUT
+              ;;
+          esac
 
-      # Set up BuildKit Docker container builder to be able to build
-      # multi-platform images and export cache
-      # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+        uses: docker/setup-buildx-action@v3
 
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Log into GHCR
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
-        with:
-          context: .
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ env.REGISTRY }}:${{ matrix.php_version }}-${{ matrix.variant }}
+          build-args: ${{ steps.args.outputs.build_args }}
+          cache-from: type=gha,scope=${{ matrix.php_version }}-${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.php_version }}-${{ matrix.variant }}
 
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+  build-dependent:
+    runs-on: ubuntu-latest
+    needs: build-independent
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        php_version: ["8.2", "8.3"]
+        variant: ["octane-dev", "octane-prod", "octane-frankenphp"]
+        include:
+          - variant: octane-dev
+            context: ./octane/
+            dockerfile: ./octane/Dockerfile.dev
+            base_variant: octane-base
+          - variant: octane-prod
+            context: ./octane/
+            dockerfile: ./octane/Dockerfile.prod
+            base_variant: octane-base
+          - variant: octane-frankenphp
+            context: ./octane/
+            dockerfile: ./octane/Dockerfile.frankenphp
+            base_variant: octane-frankenphp-base
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}:${{ matrix.php_version }}-${{ matrix.variant }}
+          build-args: php_base_image=${{ env.REGISTRY }}:${{ matrix.php_version }}-${{ matrix.base_variant }}
+          cache-from: type=gha,scope=${{ matrix.php_version }}-${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.php_version }}-${{ matrix.variant }}
