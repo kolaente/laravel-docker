@@ -19,6 +19,7 @@ jobs:
       contents: read
       packages: write
     strategy:
+      fail-fast: false
       matrix:
         php_version: ["8.2", "8.3"]
         variant: ["apache-dev", "apache-prod", "octane-base", "octane-frankenphp-base"]
@@ -84,6 +85,7 @@ jobs:
       contents: read
       packages: write
     strategy:
+      fail-fast: false
       matrix:
         php_version: ["8.2", "8.3"]
         variant: ["octane-dev", "octane-prod", "octane-frankenphp"]
