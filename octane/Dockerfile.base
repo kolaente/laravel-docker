@@ -13,7 +13,7 @@ RUN apt-get update && \
     libxpm-dev \
     zip libzip-dev \
     gnupg2 \
-    pcregrep \
+    pcre2-utils \
     procps \
     imagemagick libmagickwand-dev \
     libtidy-dev \
