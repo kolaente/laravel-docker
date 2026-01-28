@@ -32,9 +32,9 @@ COPY . ./
 
 RUN pnpm run build && rm -rf node_modules
 
-FROM ghcr.io/kolaente/laravel:8.3-octane-prod
+FROM ghcr.io/kolaente/laravel:8.3-octane-frankenphp
 
-RUN apt-get install -y mariadb-client && \
+RUN apt-get update && apt-get install -y mariadb-client libpq-dev && \
   docker-php-ext-install mysqli curl exif && \
   docker-php-ext-install pdo pdo_mysql
 
@@ -45,7 +45,7 @@ COPY --from=build-php /var/www/vendor /var/www/vendor
 
 This will package the whole application as a single docker image ready to deploy.
 
-## Using Frankenphp
+## Using Frankenphp with PostgreSQL
 
 The Frankenphp image does not have drivers for mysql or postgresql installed. If you need those, you'll have to install them yourself:
 

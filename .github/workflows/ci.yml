@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         php_version: ${{ fromJson(needs.setup.outputs.php_versions) }}
-        variant: ["apache-dev", "apache-prod", "octane-base", "octane-frankenphp-base"]
+        variant: ["apache-dev", "apache-prod", "octane-frankenphp-base"]
         include:
           - variant: apache-dev
             context: ./apache/
@@ -38,9 +38,6 @@ jobs:
           - variant: apache-prod
             context: ./apache/
             dockerfile: ./apache/Dockerfile.prod
-          - variant: octane-base
-            context: ./octane/
-            dockerfile: ./octane/Dockerfile.base
           - variant: octane-frankenphp-base
             context: ./octane/
             dockerfile: ./octane/Dockerfile.base
@@ -55,9 +52,6 @@ jobs:
           case "${{ matrix.variant }}" in
             apache-*)
               echo "build_args=php_version=${{ matrix.php_version }}" >> $GITHUB_OUTPUT
-              ;;
-            octane-base)
-              echo "build_args=php_base_image=php:${{ matrix.php_version }}-trixie" >> $GITHUB_OUTPUT
               ;;
             octane-frankenphp-base)
               echo "build_args=php_base_image=dunglas/frankenphp:php${{ matrix.php_version }}-trixie" >> $GITHUB_OUTPUT
@@ -96,16 +90,8 @@ jobs:
       fail-fast: false
       matrix:
         php_version: ${{ fromJson(needs.setup.outputs.php_versions) }}
-        variant: ["octane-dev", "octane-prod", "octane-frankenphp"]
+        variant: ["octane-frankenphp"]
         include:
-          - variant: octane-dev
-            context: ./octane/
-            dockerfile: ./octane/Dockerfile.dev
-            base_variant: octane-base
-          - variant: octane-prod
-            context: ./octane/
-            dockerfile: ./octane/Dockerfile.prod
-            base_variant: octane-base
           - variant: octane-frankenphp
             context: ./octane/
             dockerfile: ./octane/Dockerfile.frankenphp
