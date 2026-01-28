@@ -16,7 +16,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      php_versions: '["8.3", "8.4"]'
+      php_versions: '["8.3", "8.4", "8.5"]'
     steps:
       - run: echo "Defining PHP versions matrix"
 
