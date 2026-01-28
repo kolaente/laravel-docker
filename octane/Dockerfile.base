@@ -39,7 +39,7 @@ RUN curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/45
     && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini
 ADD imagick-policy.xml /etc/ImageMagick-6/policy.xml
 
-ENV PHPREDIS_VERSION=6.1.0
+ENV PHPREDIS_VERSION=6.3.0
 RUN mkdir -p /usr/src/php/ext/redis \
     && curl -L https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \
     && echo 'redis' >> /usr/src/php-available-exts \
