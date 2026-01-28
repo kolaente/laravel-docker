@@ -10,9 +10,10 @@ fi
 artisan="/usr/local/bin/php $1"
 $artisan down
 $artisan clear
-$artisan cache:clear
 
 $artisan migrate --force
+
+$artisan cache:clear
 
 $artisan config:clear
 $artisan config:cache
