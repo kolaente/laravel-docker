@@ -48,7 +48,7 @@ jobs:
               echo "build_args=php_version=${{ matrix.php_version }}" >> $GITHUB_OUTPUT
               ;;
             octane-base)
-              echo "build_args=php_base_image=php:${{ matrix.php_version }}-bullseye" >> $GITHUB_OUTPUT
+              echo "build_args=php_base_image=php:${{ matrix.php_version }}-bookworm" >> $GITHUB_OUTPUT
               ;;
             octane-frankenphp-base)
               echo "build_args=php_base_image=dunglas/frankenphp:php${{ matrix.php_version }}-bookworm" >> $GITHUB_OUTPUT
