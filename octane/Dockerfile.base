@@ -29,8 +29,8 @@ RUN apt-get update && \
   docker-php-ext-install tidy && \
   docker-php-ext-enable tidy
 
-# https://github.com/Imagick/imagick/issues/643#issuecomment-1834361716
-RUN curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/7088edc353f53c4bc644573a79cdcd67a726ae16.tar.gz \
+# https://github.com/Imagick/imagick/pull/741 - PHP 8.5 support
+RUN curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/45adfb7b1e322eaa6174e88f7d5e27ef20e0596e.tar.gz \
     && tar --strip-components=1 -xf /tmp/imagick.tar.gz \
     && phpize \
     && ./configure \
