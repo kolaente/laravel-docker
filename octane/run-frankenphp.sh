@@ -14,6 +14,7 @@ case "$APP_URL" in
         HTTPS_FLAGS="--https --http-redirect"
         PORT=443
         HOST="${SERVER_NAME:-localhost}"
+        export OCTANE_HTTPS=true
         ;;
 esac
 
