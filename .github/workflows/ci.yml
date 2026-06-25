@@ -20,8 +20,11 @@ jobs:
     steps:
       - run: echo "Defining PHP versions matrix"
 
+  # Each arch builds on its own native runner. The PHP extensions compile for the
+  # target arch (no cross-compilation), so emulating arm64 on amd64 is ~12x slower.
+  # Images are pushed by digest here and stitched into one manifest by merge-independent.
   build-independent:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform.runner }}
     needs: setup
     permissions:
       contents: read
@@ -31,6 +34,13 @@ jobs:
       matrix:
         php_version: ${{ fromJson(needs.setup.outputs.php_versions) }}
         variant: ["apache-dev", "apache-prod", "octane-frankenphp-base"]
+        platform:
+          - arch: amd64
+            name: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            name: linux/arm64
+            runner: ubuntu-24.04-arm
         include:
           - variant: apache-dev
             context: ./apache/
@@ -58,11 +68,6 @@ jobs:
               ;;
           esac
 
-      # arm64 layers are built under emulation since the PHP extensions compile
-      # for the target arch (no cross-compilation like a Go binary).
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -74,21 +79,81 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push by digest
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64/v8
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}:${{ matrix.php_version }}-${{ matrix.variant }}
+          platforms: ${{ matrix.platform.name }}
           build-args: ${{ steps.args.outputs.build_args }}
-          cache-from: type=gha,scope=${{ matrix.php_version }}-${{ matrix.variant }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.php_version }}-${{ matrix.variant }}
+          outputs: type=image,name=${{ env.REGISTRY }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.platform.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.platform.arch }}
+
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.php_version }}-${{ matrix.variant }}-${{ matrix.platform.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # Combine the per-arch digests into a single multi-arch tag.
+  merge-independent:
+    runs-on: ubuntu-latest
+    needs: [setup, build-independent]
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        php_version: ${{ fromJson(needs.setup.outputs.php_versions) }}
+        variant: ["apache-dev", "apache-prod", "octane-frankenphp-base"]
+
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-${{ matrix.php_version }}-${{ matrix.variant }}-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest list
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.REGISTRY }}:${{ matrix.php_version }}-${{ matrix.variant }} \
+            $(printf '${{ env.REGISTRY }}@sha256:%s ' *)
 
   build-dependent:
     runs-on: ubuntu-latest
-    needs: [setup, build-independent]
+    needs: [setup, build-independent, merge-independent]
+    # build-independent must succeed; merge-independent is skipped on PRs (nothing pushed).
+    if: |
+      always() &&
+      needs.build-independent.result == 'success' &&
+      (needs.merge-independent.result == 'success' || needs.merge-independent.result == 'skipped')
     permissions:
       contents: read
       packages: write
@@ -107,6 +172,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # No RUN steps in this Dockerfile, so the arm64 layer is just file copies and
+      # builds fine via emulation in a single multi-platform step.
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
