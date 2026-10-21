@@ -2,7 +2,7 @@
 
 This repo contains pre-built dockerimages for Laravel.
 
-Images are published only on GitHub Container Registry (GHCR). Make sure your Dockerfiles use `ghcr.io/kolaente/laravel:*` (see examples below).
+Images are published only on GitHub Container Registry (GHCR). Make sure your Dockerfiles use `ghcr.io/kolaente/laravel-docker:*` (see examples below).
 
 ## Using this image
 
@@ -32,7 +32,7 @@ COPY . ./
 
 RUN pnpm run build && rm -rf node_modules
 
-FROM ghcr.io/kolaente/laravel:8.3-octane-frankenphp
+FROM ghcr.io/kolaente/laravel-docker:8.3-octane-frankenphp
 
 RUN apt-get update && apt-get install -y mariadb-client libpq-dev && \
   docker-php-ext-install mysqli curl exif && \
@@ -73,7 +73,7 @@ COPY . ./
 
 RUN pnpm run build && rm -rf node_modules
 
-FROM ghcr.io/kolaente/laravel:8.3-octane-frankenphp
+FROM ghcr.io/kolaente/laravel-docker:8.3-octane-frankenphp
 
 RUN apt-get update && apt-get install -y libpq-dev && \
   docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
