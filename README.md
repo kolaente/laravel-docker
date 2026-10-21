@@ -90,4 +90,6 @@ Until FrankenPHP ships patched PHP, the FrankenPHP images block some requests be
 
 - any `multipart/*` request gets `415`, so file uploads don't work
 - bodies of 8MB or more get `413`
-- chunked bodies, and `POST`/`PUT`/`PATCH` requests without a `Content-Length` header, get `411` This is a stopgap for [GHSA-w8hw-w9fx-j79w](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) (CVE-2026-109618) and [GHSA-6wmf-4rv5-p3rp](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) (CVE-2026-109619).
+- chunked bodies, and `POST`/`PUT`/`PATCH` requests without a `Content-Length` header, get `411`
+
+This is a stopgap for [GHSA-w8hw-w9fx-j79w](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) (CVE-2026-109618) and [GHSA-6wmf-4rv5-p3rp](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) (CVE-2026-109619).
