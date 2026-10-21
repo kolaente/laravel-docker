@@ -3,12 +3,16 @@ FROM php:${php_version}-apache
 
 ENV APACHE_DOCUMENT_ROOT /var/www/public
 
+# Upload/memory limits and cve-mitigation.ini: temporary php.net mitigation for
+# CVE-2026-109618/109619, revert once bases ship 8.3.36/8.4.27/8.5.12
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf && \
 sed -ri -e 's!LogFormat\ "\%h\ \%l\ \%u\ \%t!LogFormat\ "\%h\ \%l\ \%u\ \%t\ \%D!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf && \
-echo "upload_max_filesize = 2G; " > /usr/local/etc/php/conf.d/upload.ini && \
-echo "post_max_size = 2500M;" >> /usr/local/etc/php/conf.d/upload.ini && \
+echo "upload_max_filesize = 30M; " > /usr/local/etc/php/conf.d/upload.ini && \
+echo "post_max_size = 32M;" >> /usr/local/etc/php/conf.d/upload.ini && \
 echo "date.timezone = \"Europe/Berlin\"" >> /usr/local/etc/php/conf.d/timezone.ini && \
-echo 'memory_limit = 2G' >> /usr/local/etc/php/conf.d/max_memory.ini && \
+echo 'memory_limit = -1' >> /usr/local/etc/php/conf.d/max_memory.ini && \
+echo 'session.upload_progress.enabled = 0' > /usr/local/etc/php/conf.d/cve-mitigation.ini && \
+echo 'fatal_error_backtraces = 0' >> /usr/local/etc/php/conf.d/cve-mitigation.ini && \
 echo 'expose_php = off' >> /usr/local/etc/php/conf.d/header.ini
 RUN apt-get update && \
   apt-get install -y \
