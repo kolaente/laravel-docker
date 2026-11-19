@@ -15,10 +15,20 @@ env:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    env:
+      PHP_BASE_IMAGES: >-
+        {
+          "8.3": {"apache": "8.3.37", "frankenphp": "dunglas/frankenphp:php8.3-trixie@sha256:6706866314b691d6ece0640da211aa7d88d0c4273a589a9763f3d6dd909dbc3a"},
+          "8.4": {"apache": "8.4.28", "frankenphp": "dunglas/frankenphp:php8.4-trixie@sha256:6e6dbe19b69922a79d0f6208619067417fc0920557419eba0de4039c056cf2c0"},
+          "8.5": {"apache": "8.5.13", "frankenphp": "dunglas/frankenphp:php8.5-trixie@sha256:17ff6554ba6de527d17aa5ec37e2a3bc3b182d7dbea9362f9a02eb5b4a1c4b95"}
+        }
     outputs:
-      php_versions: '["8.3", "8.4", "8.5"]'
+      php_versions: ${{ steps.versions.outputs.php_versions }}
+      php_base_images: ${{ env.PHP_BASE_IMAGES }}
     steps:
-      - run: echo "Defining PHP versions matrix"
+      - name: Define PHP versions matrix
+        id: versions
+        run: echo "php_versions=$(jq -c 'keys' <<< "$PHP_BASE_IMAGES")" >> "$GITHUB_OUTPUT"
 
   # Each arch builds on its own native runner. The PHP extensions compile for the
   # target arch (no cross-compilation), so emulating arm64 on amd64 is ~12x slower.
@@ -58,13 +68,16 @@ jobs:
 
       - name: Compute build args
         id: args
+        env:
+          APACHE_PHP_VERSION: ${{ fromJson(needs.setup.outputs.php_base_images)[matrix.php_version].apache }}
+          FRANKENPHP_BASE_IMAGE: ${{ fromJson(needs.setup.outputs.php_base_images)[matrix.php_version].frankenphp }}
         run: |
           case "${{ matrix.variant }}" in
             apache-*)
-              echo "build_args=php_version=${{ matrix.php_version }}" >> $GITHUB_OUTPUT
+              echo "build_args=php_version=$APACHE_PHP_VERSION" >> "$GITHUB_OUTPUT"
               ;;
             octane-frankenphp-base)
-              echo "build_args=php_base_image=dunglas/frankenphp:php${{ matrix.php_version }}-trixie" >> $GITHUB_OUTPUT
+              echo "build_args=php_base_image=$FRANKENPHP_BASE_IMAGE" >> "$GITHUB_OUTPUT"
               ;;
           esac
 
